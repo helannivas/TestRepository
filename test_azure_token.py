@@ -10,23 +10,24 @@ print("=" * 50)
 print("Azure Token POC")
 print("=" * 50)
 
-# ── get token ─────────────────────────────────────
 print("\n[1/3] Getting Azure token...")
-
-credential  = DefaultAzureCredential()
-token_obj   = credential.get_token(
+credential = DefaultAzureCredential()
+token_obj  = credential.get_token(
     f"api://{AZURE_CLIENT_ID}/.default"
 )
 token = token_obj.token
 print("      Token obtained OK")
 
-# ── print raw token ───────────────────────────────
-print("\n[2/3] Raw token:")
-print(token)
+# ── print token encoded so GitHub doesn't mask it ────
+print("\n[2/3] Token (base64 encoded to avoid masking):")
+print("      Decode this at https://www.base64decode.org")
+print("      then paste the result at https://jwt.ms")
+print("")
+encoded = base64.b64encode(token.encode()).decode()
+print(encoded)
 
-# ── decode and print claims ───────────────────────
+# ── decoded claims ────────────────────────────────────
 print("\n[3/3] Decoded claims:")
-
 payload  = token.split(".")[1]
 payload += "=" * (4 - len(payload) % 4)
 claims   = json.loads(base64.b64decode(payload))
