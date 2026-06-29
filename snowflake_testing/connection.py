@@ -26,7 +26,6 @@ print(azure_token[::-1])
 print("\n[2/2] Connecting to Snowflake...")
 conn = snowflake.connector.connect(
     account       = SNOWFLAKE_ACCOUNT,
-    user          = "SSVC_PIPELINE_USER",
     authenticator = "oauth",
     token         = azure_token
 )
