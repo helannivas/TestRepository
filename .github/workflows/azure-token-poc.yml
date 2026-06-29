@@ -27,7 +27,7 @@ jobs:
         env:
           AZURE_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
           AZURE_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
-        run: python3 scripts/test_azure_token.py
+        run: python3 test_azure_token.py
 
   # ── generate keys + upload to Secret Manager ──────
   generate-and-upload:
@@ -50,4 +50,4 @@ jobs:
         uses: google-github-actions/setup-gcloud@v2
 
       - name: Generate key pair and upload
-        run: bash scripts/generate_and_upload.sh
+        run: bash generate_and_upload.sh
