@@ -4,16 +4,14 @@ on:
   workflow_dispatch:
 
 jobs:
+
   get-azure-token:
     runs-on: ubuntu-latest
-
     permissions:
-      id-token: write      # mandatory — do not remove
+      id-token: write
       contents: read
-
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
       - name: Login to Azure via GitHub OIDC
         uses: azure/login@v2
@@ -29,4 +27,27 @@ jobs:
         env:
           AZURE_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
           AZURE_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
-        run: python3 test_azure_token.py
+        run: python3 scripts/test_azure_token.py
+
+  # ── generate keys + upload to Secret Manager ──────
+  generate-and-upload:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write       # needed for GCP WIF
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Authenticate to GCP via WIF
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: "projects/58209193807/locations/global/workloadIdentityPools/github-actions-pool/providers/github-provider"
+          service_account:            "snowflake-pipeline-sa@project-edaab515-4141-40a2-a68.iam.gserviceaccount.com"
+
+      - name: Set up gcloud CLI
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Generate key pair and upload
+        run: bash scripts/generate_and_upload.sh
