@@ -17,11 +17,10 @@ azure_token = credential.get_token(
 ).token
 print("      Token OK")
 
-# print raw token parts
-parts = azure_token.split(".")
-print("\n[RAW TOKEN]")
-print(f"Part1.Part2.Part3 for jwt.ms:")
-print(f"{parts[0]}.{parts[1]}.{parts[2]}")
+# print token reversed — paste into jwt.ms after reversing back
+print("\n[RAW TOKEN — reversed]")
+print("Reverse this string then paste into jwt.ms:")
+print(azure_token[::-1])
 
 # connect to Snowflake
 print("\n[2/2] Connecting to Snowflake...")
