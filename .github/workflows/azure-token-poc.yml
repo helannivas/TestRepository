@@ -37,7 +37,8 @@ jobs:
           pip install \
             azure-identity \
             snowflake-connector-python \
-            google-cloud-secret-manager
+            google-cloud-secret-manager \
+            cryptography
 
       # ── step 1+2: generate keys + upload to GCP ───
       - name: Generate key pair and upload to Secret Manager
@@ -46,3 +47,7 @@ jobs:
       # ── step 3+4+5+6: fetch key, get token, call SF
       - name: Connect to Snowflake and rotate key
         run: python3 call_snowflake.py
+        
+      # ── step 7: Validates the connection
+      - name: Validate key pair against Snowflake
+        run: python3 scripts/test_keypair.py
