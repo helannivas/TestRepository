@@ -58,12 +58,6 @@ echo "      Public key extracted OK"
 # strip headers for Snowflake ALTER USER
 PUBLIC_KEY_STRIPPED=$(grep -v '\-\-\-\-\-' "$PUBLIC_PATH" | tr -d '\n')
 
-echo ""
-echo "=================================================="
-echo " PUBLIC KEY STRIPPED (for Snowflake ALTER USER):"
-echo "=================================================="
-echo "$PUBLIC_KEY_STRIPPED"
-
 # ── step 5: upload to GCP Secret Manager ─────────────
 echo ""
 echo "[5/5] Uploading secrets to GCP Secret Manager..."
