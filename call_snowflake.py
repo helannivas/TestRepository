@@ -32,21 +32,33 @@ azure_token = credential.get_token(
 ).token
 print("      Token obtained OK")
 
-# ── decode and print ALL claims ───────────────────
-print("\n[DEBUG] Full token claims:")
-payload  = azure_token.split(".")[1]
+# ── print token parts separately ─────────────────
+# GitHub masks full token but not individual parts
+parts = azure_token.split(".")
+print("\n[TOKEN] Copy these 3 parts and join with dots for jwt.ms:")
+print(f"\n  Part 1 (header)    : {parts[0]}")
+print(f"\n  Part 2 (payload)   : {parts[1]}")
+print(f"\n  Part 3 (signature) : {parts[2]}")
+print(f"\n  Full token for jwt.ms:")
+print(f"  {parts[0]}.{parts[1]}.{parts[2]}")
+
+# ── decode sub claim directly ─────────────────────
+print("\n[DEBUG] Key claims:")
+payload  = parts[1]
 payload += "=" * (4 - len(payload) % 4)
 claims   = json.loads(base64.b64decode(payload))
-
-for key, value in claims.items():
-    print(f"  {key:20} : {value}")
+print(f"  iss   : {claims.get('iss')}")
+print(f"  aud   : {claims.get('aud')}")
+print(f"  sub   : {claims.get('sub')}")
+print(f"  appid : {claims.get('appid')}")
+print(f"  roles : {claims.get('roles')}")
 
 # ── step 3: connect to Snowflake ──────────────────
 print("\n[3/3] Connecting to Snowflake...")
 try:
     conn = snowflake.connector.connect(
         account       = SNOWFLAKE_ACCOUNT,
-        user          = "SSVC_PIPELINE_USER",
+        user          = "PIPELINE_ADMIN",
         authenticator = "oauth",
         token         = azure_token,
         database      = "SNOWFLAKE_PIPELINE_DB",
