@@ -5,30 +5,25 @@ echo "=================================================="
 echo " Key Pair Generation + GCP Secret Manager Upload"
 echo "=================================================="
 
-# ── hardcoded config ──────────────────────────────────
 GCP_PROJECT="project-edaab515-4141-40a2-a68"
 SECRET_PREFIX="SNOWFLAKE_SVC"
 
-# ── step 1: generate random passphrase ───────────────
 echo ""
 echo "[1/5] Generating random passphrase..."
 PASSPHRASE=$(openssl rand -base64 32)
 echo "      Passphrase generated OK"
 
-# ── step 2: create temp directory ────────────────────
 KEY_DIR=$(mktemp -d)
 RSA_PATH="$KEY_DIR/rsa.pem"
 PRIVATE_PATH="$KEY_DIR/snowflake_key.p8"
 PUBLIC_PATH="$KEY_DIR/snowflake_key.pub"
 
-# always clean up temp files on exit
 cleanup() {
   rm -rf "$KEY_DIR"
   echo "      Temp files deleted"
 }
 trap cleanup EXIT
 
-# ── step 3: generate RSA 2048 key ────────────────────
 echo ""
 echo "[2/5] Generating RSA 2048 key..."
 openssl genrsa \
@@ -55,10 +50,9 @@ openssl rsa \
   -out    "$PUBLIC_PATH" 2>/dev/null
 echo "      Public key extracted OK"
 
-# strip headers for Snowflake ALTER USER
+# strip headers — not printed in log
 PUBLIC_KEY_STRIPPED=$(grep -v '\-\-\-\-\-' "$PUBLIC_PATH" | tr -d '\n')
 
-# ── step 5: upload to GCP Secret Manager ─────────────
 echo ""
 echo "[5/5] Uploading secrets to GCP Secret Manager..."
 
@@ -82,12 +76,45 @@ gcloud secrets versions add "${SECRET_PREFIX}_PUBLIC_KEY" \
   --data-file=-
 echo "      ${SECRET_PREFIX}_PUBLIC_KEY uploaded OK"
 
+# ── disable old versions ──────────────────────────
+echo ""
+echo "[6/5] Disabling old secret versions..."
+
+disable_old_versions() {
+  SECRET_NAME="$1"
+
+  VERSIONS=$(gcloud secrets versions list "$SECRET_NAME" \
+    --project="$GCP_PROJECT" \
+    --filter="state=ENABLED" \
+    --sort-by="createTime" \
+    --format="value(name)")
+
+  TOTAL=$(echo "$VERSIONS" | grep -c . || true)
+
+  if [ "$TOTAL" -le 1 ]; then
+    echo "      $SECRET_NAME — only 1 version, nothing to disable"
+    return
+  fi
+
+  OLD_VERSIONS=$(echo "$VERSIONS" | head -n -1)
+
+  for VERSION in $OLD_VERSIONS; do
+    gcloud secrets versions disable "$VERSION" \
+      --project="$GCP_PROJECT" \
+      --quiet
+    echo "      Disabled: $VERSION"
+  done
+
+  echo "      $SECRET_NAME — old versions disabled OK"
+}
+
+disable_old_versions "${SECRET_PREFIX}_PRIVATE_KEY"
+disable_old_versions "${SECRET_PREFIX}_PASSPHRASE"
+disable_old_versions "${SECRET_PREFIX}_PUBLIC_KEY"
+
 echo ""
 echo "=================================================="
-echo " COMPLETE"
-echo " Project : $GCP_PROJECT"
-echo " Secrets :"
-echo "   ${SECRET_PREFIX}_PRIVATE_KEY"
-echo "   ${SECRET_PREFIX}_PASSPHRASE"
-echo "   ${SECRET_PREFIX}_PUBLIC_KEY"
+echo " ALL DONE"
+echo " Keys generated and uploaded"
+echo " Old versions disabled"
 echo "=================================================="
