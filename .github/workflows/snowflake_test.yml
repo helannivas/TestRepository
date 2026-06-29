@@ -1,4 +1,10 @@
-test-snowflake-connection:
+name: Snowflake Connection Test
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test-snowflake-connection:
     runs-on: ubuntu-latest
     permissions:
       id-token: write
