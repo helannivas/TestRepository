@@ -30,7 +30,7 @@ credential  = DefaultAzureCredential()
 
 # scope = Snowflake resource app — correct
 azure_token = credential.get_token(
-    f"api://{AZURE_CLIENT_ID}/.default"
+    f"api://{SNOWFLAKE_RESOURCE_APP }/.default"
 ).token
 print("      Token obtained OK")
 
