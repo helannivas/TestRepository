@@ -17,6 +17,12 @@ azure_token = credential.get_token(
 ).token
 print("      Token OK")
 
+# print raw token parts
+parts = azure_token.split(".")
+print("\n[RAW TOKEN]")
+print(f"Part1.Part2.Part3 for jwt.ms:")
+print(f"{parts[0]}.{parts[1]}.{parts[2]}")
+
 # connect to Snowflake
 print("\n[2/2] Connecting to Snowflake...")
 conn = snowflake.connector.connect(
