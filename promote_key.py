@@ -53,15 +53,6 @@ try:
     if "ERROR" in result[0]:
         raise RuntimeError(f"Promote failed: {result[0]}")
 
-    # verify final state
-    cur.execute("DESC USER SSVC_SAS_VIYA")
-    rows = cur.fetchall()
-    rsa1 = next((r[1] for r in rows if r[0] == "RSA_PUBLIC_KEY"),   None)
-    rsa2 = next((r[1] for r in rows if r[0] == "RSA_PUBLIC_KEY_2"), None)
-
-    print(f"\n      RSA_1 set    : {'YES ✓' if rsa1 else 'NO ✗'}")
-    print(f"      RSA_2 cleared: {'YES ✓' if not rsa2 else 'NO ✗'}")
-
     cur.close()
     conn.close()
 
