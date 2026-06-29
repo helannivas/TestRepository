@@ -6,8 +6,9 @@ on:
 jobs:
   get-azure-token:
     runs-on: ubuntu-latest
+
     permissions:
-      id-token: write
+      id-token: write      # mandatory — do not remove
       contents: read
 
     steps:
