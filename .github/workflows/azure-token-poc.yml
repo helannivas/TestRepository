@@ -50,4 +50,4 @@ jobs:
         
       # ── step 7: Validates the connection
       - name: Validate key pair against Snowflake
-        run: python3 scripts/test_keypair.py
+        run: python3 test_keypair.py
