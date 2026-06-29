@@ -83,11 +83,12 @@ echo "[6/5] Disabling old secret versions..."
 disable_old_versions() {
   SECRET_NAME="$1"
 
+  # get version numbers only (not full paths)
   VERSIONS=$(gcloud secrets versions list "$SECRET_NAME" \
     --project="$GCP_PROJECT" \
     --filter="state=ENABLED" \
     --sort-by="createTime" \
-    --format="value(name)")
+    --format="value(name.basename())")
 
   TOTAL=$(echo "$VERSIONS" | grep -c . || true)
 
@@ -96,13 +97,15 @@ disable_old_versions() {
     return
   fi
 
+  # get all except latest (last line)
   OLD_VERSIONS=$(echo "$VERSIONS" | head -n -1)
 
   for VERSION in $OLD_VERSIONS; do
     gcloud secrets versions disable "$VERSION" \
+      --secret="$SECRET_NAME" \
       --project="$GCP_PROJECT" \
       --quiet
-    echo "      Disabled: $VERSION"
+    echo "      Disabled version: $VERSION"
   done
 
   echo "      $SECRET_NAME — old versions disabled OK"
