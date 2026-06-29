@@ -58,6 +58,7 @@ try:
 
     print("\n" + "=" * 55)
     print(" Key rotation COMPLETE ✓")
+    print(" Next: validate key pair then promote")
     print("=" * 55)
 
 except Exception as e:
