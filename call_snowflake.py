@@ -58,7 +58,7 @@ print("\n[3/3] Connecting to Snowflake...")
 try:
     conn = snowflake.connector.connect(
         account       = SNOWFLAKE_ACCOUNT,
-        user          = "PIPELINE_ADMIN",
+        user          = "SSVC_PIPELINE_USER",
         authenticator = "oauth",
         token         = azure_token,
         database      = "SNOWFLAKE_PIPELINE_DB",
