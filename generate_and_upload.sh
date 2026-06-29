@@ -18,8 +18,8 @@ echo "      Passphrase generated OK"
 # ── step 2: create temp directory ────────────────────
 KEY_DIR=$(mktemp -d)
 RSA_PATH="$KEY_DIR/rsa.pem"
-PRIVATE_PATH="$KEY_DIR/private.p8"
-PUBLIC_PATH="$KEY_DIR/public.pub"
+PRIVATE_PATH="$KEY_DIR/snowflake_key.p8"
+PUBLIC_PATH="$KEY_DIR/snowflake_key.pub"
 
 # always clean up temp files on exit
 cleanup() {
