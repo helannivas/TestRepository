@@ -11,41 +11,33 @@ print("Azure Token POC")
 print("=" * 50)
 
 # ── get token ─────────────────────────────────────
-print("\n[1/2] Getting Azure token...")
+print("\n[1/3] Getting Azure token...")
 
-try:
-    credential = DefaultAzureCredential()
+credential  = DefaultAzureCredential()
+token_obj   = credential.get_token(
+    f"api://{AZURE_CLIENT_ID}/.default"
+)
+token = token_obj.token
+print("      Token obtained OK")
 
-    # user.read scope format for Microsoft Graph
-    token_obj  = credential.get_token(
-        "https://graph.microsoft.com/.default"
-    )
-    token = token_obj.token
-    print("      Token obtained OK")
-    print(f"      Expires at: {token_obj.expires_on}")
-
-except Exception as e:
-    print(f"      FAILED: {e}")
-    exit(1)
+# ── print raw token ───────────────────────────────
+print("\n[2/3] Raw token:")
+print(token)
 
 # ── decode and print claims ───────────────────────
-print("\n[2/2] Decoding token claims...")
+print("\n[3/3] Decoded claims:")
 
-try:
-    payload  = token.split(".")[1]
-    payload += "=" * (4 - len(payload) % 4)
-    claims   = json.loads(base64.b64decode(payload))
+payload  = token.split(".")[1]
+payload += "=" * (4 - len(payload) % 4)
+claims   = json.loads(base64.b64decode(payload))
 
-    print(f"\n      iss   : {claims.get('iss',   'NOT FOUND')}")
-    print(f"      appid : {claims.get('appid', 'NOT FOUND')}")
-    print(f"      sub   : {claims.get('sub',   'NOT FOUND')}")
-    print(f"      aud   : {claims.get('aud',   'NOT FOUND')}")
-    print(f"      scp   : {claims.get('scp',   'NOT FOUND')}")
-
-except Exception as e:
-    print(f"      FAILED to decode: {e}")
-    exit(1)
+print(f"  iss   : {claims.get('iss',   'NOT FOUND')}")
+print(f"  appid : {claims.get('appid', 'NOT FOUND')}")
+print(f"  sub   : {claims.get('sub',   'NOT FOUND')}")
+print(f"  aud   : {claims.get('aud',   'NOT FOUND')}")
+print(f"  scp   : {claims.get('scp',   'NOT FOUND')}")
+print(f"  exp   : {claims.get('exp',   'NOT FOUND')}")
 
 print("\n" + "=" * 50)
-print("POC PASSED — token retrieved successfully")
+print("POC PASSED")
 print("=" * 50)
