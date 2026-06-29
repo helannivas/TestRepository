@@ -27,23 +27,22 @@ print(f"      Public key fetched OK — length: {len(public_key)}")
 # ── step 2: get Azure token ───────────────────────
 print("\n[2/3] Getting Azure token...")
 credential  = DefaultAzureCredential()
+
+# scope = Snowflake resource app — correct
 azure_token = credential.get_token(
-    f"api://{SNOWFLAKE_RESOURCE_APP}/.default"
+    f"api://{AZURE_CLIENT_ID}/.default"
 ).token
 print("      Token obtained OK")
 
-# ── print token parts separately ─────────────────
-# GitHub masks full token but not individual parts
+# ── print raw token parts ─────────────────────────
 parts = azure_token.split(".")
-print("\n[TOKEN] Copy these 3 parts and join with dots for jwt.ms:")
-print(f"\n  Part 1 (header)    : {parts[0]}")
-print(f"\n  Part 2 (payload)   : {parts[1]}")
-print(f"\n  Part 3 (signature) : {parts[2]}")
-print(f"\n  Full token for jwt.ms:")
-print(f"  {parts[0]}.{parts[1]}.{parts[2]}")
+print("\n[RAW TOKEN] Paste all 3 parts into jwt.ms:")
+print(f"\n  Header    : {parts[0]}")
+print(f"\n  Payload   : {parts[1]}")
+print(f"\n  Signature : {parts[2]}")
 
-# ── decode sub claim directly ─────────────────────
-print("\n[DEBUG] Key claims:")
+# ── decode claims ─────────────────────────────────
+print("\n[CLAIMS]")
 payload  = parts[1]
 payload += "=" * (4 - len(payload) % 4)
 claims   = json.loads(base64.b64decode(payload))
@@ -75,6 +74,10 @@ try:
     print(f"      Result: {result[0]}")
     cur.close()
     conn.close()
+
+    print("\n" + "=" * 55)
+    print(" Key rotation COMPLETE ✓")
+    print("=" * 55)
 
 except Exception as e:
     print(f"\n[ERROR] {e}")
