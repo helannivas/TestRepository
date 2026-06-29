@@ -67,8 +67,9 @@ try:
     print("      Connected OK")
 
     cur    = conn.cursor()
+# try lowercase
     result = cur.execute(
-        "CALL SNOWFLAKE_PIPELINE_DB.PIPELINE_SCHEMA.rotate_svc_public_key(%s)",
+        "CALL SNOWFLAKE_PIPELINE_DB.PIPELINE_SCHEMA.rotate_svc_public_key(?)",
         (public_key,)
     ).fetchone()
     print(f"      Result: {result[0]}")
