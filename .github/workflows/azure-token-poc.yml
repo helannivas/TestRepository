@@ -1,0 +1,31 @@
+name: Azure Token POC
+
+on:
+  workflow_dispatch:
+
+jobs:
+  get-azure-token:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Login to Azure via GitHub OIDC
+        uses: azure/login@v2
+        with:
+          client-id:              ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id:              ${{ vars.AZURE_TENANT_ID }}
+          allow-no-subscriptions: true
+
+      - name: Install azure-identity
+        run: pip install azure-identity
+
+      - name: Get Azure token
+        env:
+          AZURE_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
+          AZURE_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
+        run: python3 test_azure_token.py
