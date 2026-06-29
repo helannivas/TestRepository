@@ -1,45 +1,28 @@
-name: Azure Token POC
+name: Snowflake Key Rotation POC
 
 on:
   workflow_dispatch:
 
 jobs:
-
-  get-azure-token:
+  rotate:
     runs-on: ubuntu-latest
     permissions:
       id-token: write
-      contents: read
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Login to Azure via GitHub OIDC
-        uses: azure/login@v2
-        with:
-          client-id:              ${{ vars.AZURE_CLIENT_ID }}
-          tenant-id:              ${{ vars.AZURE_TENANT_ID }}
-          allow-no-subscriptions: true
-
-      - name: Install azure-identity
-        run: pip install azure-identity
-
-      - name: Get Azure token
-        env:
-          AZURE_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
-          AZURE_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
-        run: python3 test_azure_token.py
-
-  # ── generate keys + upload to Secret Manager ──────
-  generate-and-upload:
-    runs-on: ubuntu-latest
-    permissions:
-      id-token: write       # needed for GCP WIF
       contents: read
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
+      # ── auth to Azure (for Snowflake token) ───────
+      - name: Login to Azure via GitHub OIDC
+        uses: azure/login@v2
+        with:
+          client-id:              "51a4cea1-294f-4b79-9fb0-24ce472ae3a3"
+          tenant-id:              "cef8c081-d201-48a9-be90-7f38ac978991"
+          allow-no-subscriptions: true
+
+      # ── auth to GCP (for Secret Manager) ──────────
       - name: Authenticate to GCP via WIF
         uses: google-github-actions/auth@v2
         with:
@@ -49,5 +32,17 @@ jobs:
       - name: Set up gcloud CLI
         uses: google-github-actions/setup-gcloud@v2
 
-      - name: Generate key pair and upload
-        run: bash generate_and_upload.sh
+      - name: Install Python dependencies
+        run: |
+          pip install \
+            azure-identity \
+            snowflake-connector-python \
+            google-cloud-secret-manager
+
+      # ── step 1+2: generate keys + upload to GCP ───
+      - name: Generate key pair and upload to Secret Manager
+        run: bash scripts/generate_and_upload.sh
+
+      # ── step 3+4+5+6: fetch key, get token, call SF
+      - name: Connect to Snowflake and rotate key
+        run: python3 scripts/call_snowflake.py
