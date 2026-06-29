@@ -1,28 +1,20 @@
-name: Snowflake Key Rotation POC
+name: Snowflake Key Rotation
 
 on:
   workflow_dispatch:
 
 jobs:
-  rotate:
+
+  # ── job 1: generate keys + upload to GCP ─────────
+  generate-and-upload:
     runs-on: ubuntu-latest
     permissions:
       id-token: write
       contents: read
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      # ── auth to Azure (for Snowflake token) ───────
-      - name: Login to Azure via GitHub OIDC
-        uses: azure/login@v2
-        with:
-          client-id:              "51a4cea1-294f-4b79-9fb0-24ce472ae3a3"
-          tenant-id:              "cef8c081-d201-48a9-be90-7f38ac978991"
-          allow-no-subscriptions: true
-
-      # ── auth to GCP (for Secret Manager) ──────────
       - name: Authenticate to GCP via WIF
         uses: google-github-actions/auth@v2
         with:
@@ -32,22 +24,91 @@ jobs:
       - name: Set up gcloud CLI
         uses: google-github-actions/setup-gcloud@v2
 
-      - name: Install Python dependencies
-        run: |
-          pip install \
-            azure-identity \
-            snowflake-connector-python \
-            google-cloud-secret-manager \
-            cryptography
-
-      # ── step 1+2: generate keys + upload to GCP ───
-      - name: Generate key pair and upload to Secret Manager
+      - name: Generate key pair and upload
         run: bash generate_and_upload.sh
 
-      # ── step 3+4+5+6: fetch key, get token, call SF
-      - name: Connect to Snowflake and rotate key
+  # ── job 2: assign RSA_2 in Snowflake ─────────────
+  rotate:
+    runs-on: ubuntu-latest
+    needs: generate-and-upload
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Login to Azure via GitHub OIDC
+        uses: azure/login@v2
+        with:
+          client-id:              "51a4cea1-294f-4b79-9fb0-24ce472ae3a3"
+          tenant-id:              "cef8c081-d201-48a9-be90-7f38ac978991"
+          allow-no-subscriptions: true
+
+      - name: Authenticate to GCP via WIF
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: "projects/58209193807/locations/global/workloadIdentityPools/github-actions-pool/providers/github-provider"
+          service_account:            "snowflake-pipeline-sa@project-edaab515-4141-40a2-a68.iam.gserviceaccount.com"
+
+      - name: Install dependencies
+        run: pip install azure-identity snowflake-connector-python google-cloud-secret-manager
+
+      - name: Assign RSA_2 in Snowflake
         run: python3 call_snowflake.py
-        
-      # ── step 7: Validates the connection
+
+  # ── job 3: validate key pair works ───────────────
+  validate:
+    runs-on: ubuntu-latest
+    needs: rotate
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Authenticate to GCP via WIF
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: "projects/58209193807/locations/global/workloadIdentityPools/github-actions-pool/providers/github-provider"
+          service_account:            "snowflake-pipeline-sa@project-edaab515-4141-40a2-a68.iam.gserviceaccount.com"
+
+      - name: Install dependencies
+        run: |
+          pip install google-cloud-secret-manager \
+                      snowflake-connector-python \
+                      cryptography
+
       - name: Validate key pair against Snowflake
         run: python3 test_keypair.py
+
+  # ── job 4: promote RSA_2 → RSA_1 ─────────────────
+  promote:
+    runs-on: ubuntu-latest
+    needs: validate
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Login to Azure via GitHub OIDC
+        uses: azure/login@v2
+        with:
+          client-id:              "51a4cea1-294f-4b79-9fb0-24ce472ae3a3"
+          tenant-id:              "cef8c081-d201-48a9-be90-7f38ac978991"
+          allow-no-subscriptions: true
+
+      - name: Authenticate to GCP via WIF
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: "projects/58209193807/locations/global/workloadIdentityPools/github-actions-pool/providers/github-provider"
+          service_account:            "snowflake-pipeline-sa@project-edaab515-4141-40a2-a68.iam.gserviceaccount.com"
+
+      - name: Install dependencies
+        run: pip install azure-identity snowflake-connector-python google-cloud-secret-manager
+
+      - name: Promote RSA_2 to RSA_1
+        run: python3 promote_key.py
