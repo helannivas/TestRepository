@@ -1,0 +1,21 @@
+test-snowflake-connection:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Login to Azure via GitHub OIDC
+        uses: azure/login@v2
+        with:
+          client-id:              "51a4cea1-294f-4b79-9fb0-24ce472ae3a3"
+          tenant-id:              "cef8c081-d201-48a9-be90-7f38ac978991"
+          allow-no-subscriptions: true
+
+      - name: Install dependencies
+        run: pip install azure-identity snowflake-connector-python
+
+      - name: Test Snowflake connection
+        run: python3 snowflake_testing/connection.py
