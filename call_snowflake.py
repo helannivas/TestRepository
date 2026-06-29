@@ -59,6 +59,7 @@ try:
         account       = SNOWFLAKE_ACCOUNT,
         authenticator = "oauth",
         token         = azure_token,
+        warehouse     = "COMPUTE_WH",
         database      = "SNOWFLAKE_PIPELINE_DB",
         schema        = "PIPELINE_SCHEMA",
         role          = "PIPELINE_ADMIN_ROLE"
