@@ -39,7 +39,7 @@ try:
         warehouse     = "COMPUTE_WH",
         database      = "SNOWFLAKE_PIPELINE_DB",
         schema        = "PIPELINE_SCHEMA",
-        role          = 'PIPELINE_ADMIN_ROLE'
+        role          = "PIPELINE_ADMIN_ROLE"
     )
     print("      Connected OK")
 
