@@ -1,0 +1,23 @@
+test-cloudbuild-azure:
+    runs-on: ubuntu-latest
+    needs: generate-and-upload
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Authenticate to GCP
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Set up gcloud CLI
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Trigger Cloud Build
+        run: |
+          gcloud builds submit \
+            --config cloudbuild.yaml \
+            --no-source \
+            --project="project-edaab515-4141-40a2-a68"
