@@ -12,10 +12,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Authenticate to GCP
+      - name: Authenticate to GCP via WIF
         uses: google-github-actions/auth@v2
         with:
-          credentials_json: ${{ secrets.GCP_SA_KEY }}
+          workload_identity_provider: "projects/58209193807/locations/global/workloadIdentityPools/github-actions-pool/providers/github-provider"
+          service_account:            "snowflake-pipeline-sa@project-edaab515-4141-40a2-a68.iam.gserviceaccount.com"
 
       - name: Set up gcloud CLI
         uses: google-github-actions/setup-gcloud@v2
