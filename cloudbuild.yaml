@@ -6,7 +6,7 @@ steps:
       - -c
       - |
         pip install google-auth requests -q
-        python3 scripts/test_cloudbuild_azure_token.py
+        python3 test_cloudbuild_azure_token.py
 
 options:
   logging: CLOUD_LOGGING_ONLY
