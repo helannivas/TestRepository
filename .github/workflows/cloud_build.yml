@@ -26,5 +26,4 @@ jobs:
         run: |
           gcloud builds submit \
             --config cloudbuild.yaml \
-            --no-source \
             --project="project-edaab515-4141-40a2-a68"
