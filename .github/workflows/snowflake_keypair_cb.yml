@@ -1,0 +1,119 @@
+name: Snowflake Key Rotation Cloud Build
+
+on:
+  workflow_dispatch:
+
+jobs:
+
+  # ── Job 1: public runner — generate + upload keys ──
+  generate-and-upload:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Authenticate to GCP via WIF
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: "projects/58209193807/locations/global/workloadIdentityPools/github-actions-pool/providers/github-provider"
+          service_account:            "snowflake-pipeline-sa@project-edaab515-4141-40a2-a68.iam.gserviceaccount.com"
+
+      - name: Set up gcloud CLI
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Generate key pair and upload to Secret Manager
+        run: bash generate_and_upload.sh
+
+  # ── Job 2: rotate — assign RSA_2 ─────────────────
+  rotate:
+    runs-on: ubuntu-latest
+    needs: generate-and-upload
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Authenticate to GCP via WIF
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: "projects/58209193807/locations/global/workloadIdentityPools/github-actions-pool/providers/github-provider"
+          service_account:            "snowflake-pipeline-sa@project-edaab515-4141-40a2-a68.iam.gserviceaccount.com"
+
+      - name: Set up gcloud CLI
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Trigger Cloud Build - rotate
+        run: gcloud builds submit --config cloudbuild/cloudbuild_trigger/cloudbuild-rotate.yaml --project="project-edaab515-4141-40a2-a68" --region="europe-west2"
+
+  # ── Job 3: validate RSA_2 works ──────────────────
+  validate-rsa2:
+    runs-on: ubuntu-latest
+    needs: rotate
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Authenticate to GCP via WIF
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: "projects/58209193807/locations/global/workloadIdentityPools/github-actions-pool/providers/github-provider"
+          service_account:            "snowflake-pipeline-sa@project-edaab515-4141-40a2-a68.iam.gserviceaccount.com"
+
+      - name: Set up gcloud CLI
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Trigger Cloud Build - validate
+        run: gcloud builds submit --config cloudbuild/cloudbuild_trigger/cloudbuild-validate.yaml --project="project-edaab515-4141-40a2-a68" --region="europe-west2"
+
+  # ── Job 4: promote RSA_2 to RSA_1 ────────────────
+  promote:
+    runs-on: ubuntu-latest
+    needs: validate-rsa2
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Authenticate to GCP via WIF
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: "projects/58209193807/locations/global/workloadIdentityPools/github-actions-pool/providers/github-provider"
+          service_account:            "snowflake-pipeline-sa@project-edaab515-4141-40a2-a68.iam.gserviceaccount.com"
+
+      - name: Set up gcloud CLI
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Trigger Cloud Build - promote
+        run: gcloud builds submit --config cloudbuild/cloudbuild_trigger/cloudbuild-promote.yaml --project="project-edaab515-4141-40a2-a68" --region="europe-west2"
+
+  # ── Job 5: validate RSA_1 works ──────────────────
+  validate-rsa1:
+    runs-on: ubuntu-latest
+    needs: promote
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Authenticate to GCP via WIF
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: "projects/58209193807/locations/global/workloadIdentityPools/github-actions-pool/providers/github-provider"
+          service_account:            "snowflake-pipeline-sa@project-edaab515-4141-40a2-a68.iam.gserviceaccount.com"
+
+      - name: Set up gcloud CLI
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Trigger Cloud Build - final validation
+        run: gcloud builds submit --config cloudbuild/cloudbuild_trigger/cloudbuild-validate.yaml --project="project-edaab515-4141-40a2-a68" --region="europe-west2"
