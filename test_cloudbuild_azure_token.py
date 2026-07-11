@@ -1,7 +1,7 @@
 import json
 import base64
-import google.auth
 import google.auth.transport.requests
+from google.oauth2 import id_token
 import requests
 
 AZURE_TENANT_ID        = "cef8c081-d201-48a9-be90-7f38ac978991"
@@ -12,19 +12,18 @@ print("=" * 55)
 print(" Cloud Build → Azure Token Test")
 print("=" * 55)
 
-print("\n[1/3] Getting GCP identity token...")
-credentials, project = google.auth.default()
-credentials.refresh(google.auth.transport.requests.Request())
-gcp_token = credentials.token
-print("      GCP token obtained OK")
+print("\n[1/3] Getting GCP ID token (JWT)...")
+request      = google.auth.transport.requests.Request()
+gcp_id_token = id_token.fetch_id_token(request, "api://AzureADTokenExchange")
+print("      GCP ID token obtained OK")
 
-print("\n[2/3] Exchanging GCP token for Azure token...")
+print("\n[2/3] Exchanging GCP ID token for Azure token...")
 response = requests.post(
     f"https://login.microsoftonline.com/{AZURE_TENANT_ID}/oauth2/v2.0/token",
     data={
         "grant_type": "urn:ietf:params:oauth:grant-type:jwt-bearer",
         "client_id":  AZURE_CLIENT_ID,
-        "assertion":  gcp_token,
+        "assertion":  gcp_id_token,
         "scope":      f"api://{SNOWFLAKE_RESOURCE_APP}/.default",
         "requested_token_use": "on_behalf_of"
     }
