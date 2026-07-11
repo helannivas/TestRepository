@@ -75,7 +75,7 @@ print("      Connected OK")
 
 cur    = conn.cursor()
 result = cur.execute(
-    f"CALL SNOWFLAKE_PIPELINE_DB.PIPELINE_SCHEMA.promote_svc_public_key('{public_key}')"
+    f"CALL SNOWFLAKE_PIPELINE_DB.PIPELINE_SCHEMA.MANAGE_SAS_VIYA_SVC_SP('PROMOTE','SSVC_SAS_VIYA','{public_key}')"
 ).fetchone()
 print(f"      Result: {result[0]}")
 
