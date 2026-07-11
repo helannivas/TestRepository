@@ -29,11 +29,11 @@ print("\n[2/3] Exchanging GCP ID token for Azure token...")
 response = requests.post(
     f"https://login.microsoftonline.com/{AZURE_TENANT_ID}/oauth2/v2.0/token",
     data={
-        "grant_type": "urn:ietf:params:oauth:grant-type:jwt-bearer",
-        "client_id":  AZURE_CLIENT_ID,
-        "assertion":  gcp_id_token,
-        "scope":      f"api://{SNOWFLAKE_RESOURCE_APP}/.default",
-        "requested_token_use": "on_behalf_of"
+        "grant_type":            "client_credentials",
+        "client_id":             AZURE_CLIENT_ID,
+        "client_assertion_type": "urn:ietf:params:oauth:client-assertion-type:jwt-bearer",
+        "client_assertion":      gcp_id_token,
+        "scope":                 f"api://{SNOWFLAKE_RESOURCE_APP}/.default"
     }
 )
 
