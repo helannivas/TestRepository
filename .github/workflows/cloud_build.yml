@@ -24,7 +24,4 @@ jobs:
 
       - name: Trigger Cloud Build
         run: |
-          gcloud builds submit \
-            --config cloudbuild.yaml \
-            --project="project-edaab515-4141-40a2-a68"
-            --region="europe-west2"
+          gcloud builds submit --config cloudbuild.yaml --project="project-edaab515-4141-40a2-a68" --region="europe-west2"
