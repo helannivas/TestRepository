@@ -1,20 +1,28 @@
 import json
 import base64
 import google.auth.transport.requests
-from google.oauth2 import id_token
+from google.auth.compute_engine import IDTokenCredentials
 import requests
 
 AZURE_TENANT_ID        = "cef8c081-d201-48a9-be90-7f38ac978991"
 AZURE_CLIENT_ID        = "51a4cea1-294f-4b79-9fb0-24ce472ae3a3"
 SNOWFLAKE_RESOURCE_APP = "fea65ab4-0dbb-44f0-b7dd-8e80dba8395d"
+SA_EMAIL                = "snowflake-pipeline-sa@project-edaab515-4141-40a2-a68.iam.gserviceaccount.com"
 
 print("=" * 55)
 print(" Cloud Build → Azure Token Test")
 print("=" * 55)
 
 print("\n[1/3] Getting GCP ID token (JWT)...")
-request      = google.auth.transport.requests.Request()
-gcp_id_token = id_token.fetch_id_token(request, "api://AzureADTokenExchange")
+request = google.auth.transport.requests.Request()
+
+credentials = IDTokenCredentials(
+    request,
+    target_audience="api://AzureADTokenExchange",
+    service_account_email=SA_EMAIL
+)
+credentials.refresh(request)
+gcp_id_token = credentials.token
 print("      GCP ID token obtained OK")
 
 print("\n[2/3] Exchanging GCP ID token for Azure token...")
