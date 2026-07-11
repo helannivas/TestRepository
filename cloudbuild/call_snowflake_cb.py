@@ -69,7 +69,8 @@ conn = snowflake.connector.connect(
     token         = azure_token,
     warehouse     = "COMPUTE_WH",
     database      = "SNOWFLAKE_PIPELINE_DB",
-    schema        = "PIPELINE_SCHEMA"
+    schema        = "PIPELINE_SCHEMA",
+    role          = "PIPELINE_ADMIN_ROLE"
 )
 print("      Connected OK")
 
