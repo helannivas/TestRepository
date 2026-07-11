@@ -1,0 +1,18 @@
+steps:
+  - name: 'python:3.12-slim'
+    id: rotate-snowflake
+    entrypoint: bash
+    args:
+      - -c
+      - |
+        pip install snowflake-connector-python \
+                    google-cloud-secret-manager \
+                    google-auth requests -q
+        python3 call_snowflake.py
+
+serviceAccount: 'projects/project-edaab515-4141-40a2-a68/serviceAccounts/snowflake-pipeline-sa@project-edaab515-4141-40a2-a68.iam.gserviceaccount.com'
+
+options:
+  logging: CLOUD_LOGGING_ONLY
+  pool:
+    name: 'projects/project-edaab515-4141-40a2-a68/locations/europe-west2/workerPools/snowflake-private-pool'
