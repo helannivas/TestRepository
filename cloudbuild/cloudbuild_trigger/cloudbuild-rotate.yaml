@@ -8,7 +8,7 @@ steps:
         pip install snowflake-connector-python \
                     google-cloud-secret-manager \
                     google-auth requests -q
-        python3 call_snowflake.py
+        python3 cloudbuild/call_snowflake_cb.py
 
 serviceAccount: 'projects/project-edaab515-4141-40a2-a68/serviceAccounts/snowflake-pipeline-sa@project-edaab515-4141-40a2-a68.iam.gserviceaccount.com'
 
