@@ -39,4 +39,16 @@ print("      Azure token obtained OK")
 
 print("\n[3/3] Token claims:")
 parts    = azure_token.split(".")
-payload  =
+payload  = parts[1]
+payload += "=" * (4 - len(payload) % 4)
+claims   = json.loads(base64.b64decode(payload))
+
+print(f"  iss   : {claims.get('iss')}")
+print(f"  aud   : {claims.get('aud')}")
+print(f"  sub   : {claims.get('sub')}")
+print(f"  appid : {claims.get('appid')}")
+print(f"  roles : {claims.get('roles')}")
+
+print("\n" + "=" * 55)
+print(" Cloud Build Azure token test PASSED ✓")
+print("=" * 55)
