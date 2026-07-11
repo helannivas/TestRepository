@@ -27,3 +27,4 @@ jobs:
           gcloud builds submit \
             --config cloudbuild.yaml \
             --project="project-edaab515-4141-40a2-a68"
+            --region="europe-west2"
