@@ -11,7 +11,7 @@ SF_ACCOUNT    = "HMTLBRJ-IY80390"
 SF_USER       = "SSVC_SAS_VIYA"
 SF_WAREHOUSE  = "COMPUTE_WH"
 SF_DATABASE   = "SNOWFLAKE_PIPELINE_DB"
-SF_ROLE       = "PUBLIC"
+SF_ROLE       = "PIPELINE_ADMIN_ROLE"
 
 print("=" * 55)
 print(" Key Pair Validation Test (Cloud Build)")
