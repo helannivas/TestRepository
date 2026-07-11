@@ -10,5 +10,7 @@ steps:
 
 options:
   logging: CLOUD_LOGGING_ONLY
+  pool:
+    name: 'projects/project-edaab515-4141-40a2-a68/locations/europe-west2/workerPools/snowflake-private-pool'
 
 serviceAccount: 'projects/project-edaab515-4141-40a2-a68/serviceAccounts/snowflake-pipeline-sa@project-edaab515-4141-40a2-a68.iam.gserviceaccount.com'
